@@ -5,7 +5,7 @@ import { arrangeWith, arrangementFor, defaultSavedLayout, resolvePreset, slotsOf
 import { CalendarPanel, MusicPanel, SkeddaPanel } from './panels'
 import { useSavedLayout } from './use-saved-layout'
 
-type Config = { version: string; skeddaUrl: string | null }
+type Config = { version: string; calendarUrl: string | null; skeddaUrl: string | null }
 
 const fullReloadMs = 4 * 60 * 60 * 1000
 const expandedIdleMs = 2 * 60 * 1000
@@ -121,7 +121,7 @@ export function App() {
             onZoom={(id, z) => updateSaved((l) => ({ ...l, zoom: { ...l.zoom, [id]: z } }))}
             onSwap={onSwap}
             renderPanel={(id) =>
-              id === 'calendar' ? <CalendarPanel /> : id === 'skedda' ? <SkeddaPanel url={config?.skeddaUrl ?? null} /> : <MusicPanel />
+              id === 'calendar' ? <CalendarPanel url={config?.calendarUrl ?? null} /> : id === 'skedda' ? <SkeddaPanel url={config?.skeddaUrl ?? null} /> : <MusicPanel />
             }
           />
         )}

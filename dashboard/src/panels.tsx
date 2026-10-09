@@ -1,32 +1,31 @@
 import { useEffect, useState } from 'react'
 
-export function CalendarPanel() {
-  return (
-    <div className="placeholder">
-      <p className="placeholder-title">Calendar</p>
-      <p className="placeholder-text">Today and the next few days will show here.</p>
-    </div>
-  )
-}
+const embedRefreshMs = 60 * 60 * 1000
 
-const skeddaRefreshMs = 60 * 60 * 1000
-
-export function SkeddaPanel({ url }: { url: string | null }) {
-  // Reload the booking view hourly in case its own live updates stall.
+// An embedded page (Google Calendar, Skedda), reloaded hourly in case its own live updates stall.
+function EmbedPanel({ url, title, missing }: { url: string | null; title: string; missing: string }) {
   const [reloads, setReloads] = useState(0)
   useEffect(() => {
-    const id = window.setInterval(() => setReloads((n) => n + 1), skeddaRefreshMs)
+    const id = window.setInterval(() => setReloads((n) => n + 1), embedRefreshMs)
     return () => window.clearInterval(id)
   }, [])
 
   if (!url) {
     return (
       <div className="placeholder">
-        <p className="placeholder-text">Bookings aren't set up yet.</p>
+        <p className="placeholder-text">{missing}</p>
       </div>
     )
   }
-  return <iframe key={reloads} className="skedda-frame" src={url} title="Room bookings" />
+  return <iframe key={reloads} className="embed-frame" src={url} title={title} />
+}
+
+export function CalendarPanel({ url }: { url: string | null }) {
+  return <EmbedPanel url={url} title="Calendar" missing="The calendar isn't set up yet." />
+}
+
+export function SkeddaPanel({ url }: { url: string | null }) {
+  return <EmbedPanel url={url} title="Room bookings" missing="Bookings aren't set up yet." />
 }
 
 export function MusicPanel() {

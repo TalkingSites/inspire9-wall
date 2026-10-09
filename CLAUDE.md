@@ -1,6 +1,6 @@
 # Inspire9 Wall
 
-Wall dashboard for a Windows kiosk PC: Google Calendar agenda, Skedda bookings (iframe) and Sonos controls. Private deployment details (domain, IPs, speakers, Coolify ids, progress notes) are in `CLAUDE.local.md`, which is gitignored. Read it first.
+Wall dashboard for a Windows kiosk PC: Google Calendar and Skedda bookings (both iframes) and Sonos controls. Private deployment details (domain, IPs, speakers, Coolify ids, progress notes) are in `CLAUDE.local.md`, which is gitignored. Read it first.
 
 ## This repo is public
 
@@ -12,6 +12,7 @@ Never put identifying details in tracked files, commits, issues or PRs: no deplo
 - `music/` (next): shared Sonos code, used by the dashboard server in local mode and by the helper.
 - `helper/` (planned): Windows service exposing the music API on `127.0.0.1:5005`, built to a single `.exe`, released by a GitHub Action.
 - `windows/` (planned): PowerShell scripts for the kiosk PC.
+- `apps-script/wall-calendar-sync.gs`: Google Apps Script that keeps public title-and-time copies of the office calendars for the embed (the real one, with calendar ids, lives in the Google account).
 - `scripts/screenshot.mjs`: Playwright screenshots at given sizes, for checking layouts.
 
 ## Commands
@@ -22,14 +23,15 @@ Never put identifying details in tracked files, commits, issues or PRs: no deplo
 
 ## How things work
 
-- Panel layout: `react-resizable-panels` v4 (`Group`, `Panel`, `Separator`). Presets live in `src/layout.ts`; `Board.tsx` renders them. The saved layout (preset, sizes per preset and group, minimised panels) is stored by the server in `DATA_DIR/layout.json`, with a localStorage copy for a fast first paint.
+- Panel layout: `react-resizable-panels` v4 (`Group`, `Panel`, `Separator`). Presets live in `src/layout.ts`; `Board.tsx` renders them. The saved layout (preset, sizes per preset and group, minimised panels, panel order per preset after drag swaps, zoom per panel, clock formats) is stored by the server in `DATA_DIR/layout.json`, with a localStorage copy for a fast first paint.
 - Expanded panels are the same DOM node switched to `position: fixed`, so iframes don't reload. Minimised panels keep their body mounted for the same reason.
 - Music source is pluggable: the dashboard server talks to Sonos directly when run on the office network (local mode), and the kiosk browser talks to the helper on `localhost:5005` in production.
+- Calendar and bookings are iframes (`src/panels.tsx`): Google Calendar's own embed (`GCAL_EMBED_URL`, one `src=` and `color=` per calendar) and Skedda (`SKEDDA_URL`). The embedded calendars are public copies kept in sync by `apps-script/wall-calendar-sync.gs` (titles and times only), so the kiosk needs no Google login. One copy per source calendar, because the embed colours whole calendars, not events.
 - Times are always Australia/Melbourne.
 
 ## Conventions
 
-- Brand: Plus Jakarta Sans; tokens in `src/styles.css` (`--off-white`, `--charcoal`, `--brand-red`, sage). White cards, 1.5px warm borders, 14px radius, a 4px red stripe under the top bar.
+- Brand: Plus Jakarta Sans; tokens in `src/styles.css` (`--off-white`, `--charcoal`, `--brand-red`, sage). Styled after the Mautic welcome page: warm grey background, charcoal top bar with a 4px red stripe, white cards with 1.5px warm borders and 10px radius, red bold card titles, sage-tint icon tiles. Icons are Bootstrap Icons (`src/icons.tsx`).
 - Readable from across a room, everything usable by touch (44px+ targets). No keyboard on the kiosk.
 - Australian English, no em dashes in copy, no eyebrow labels above headings.
 - Version is in `package.json` and `dashboard/package.json`; bump both together (minor for features and fixes). It shows in the top bar.

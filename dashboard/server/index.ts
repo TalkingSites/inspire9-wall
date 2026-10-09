@@ -23,6 +23,7 @@ app.get('/api/health', (c) => c.json({ ok: true }))
 app.get('/api/config', (c) =>
   c.json({
     version: pkg.version,
+    calendarUrl: process.env.GCAL_EMBED_URL ?? null,
     skeddaUrl: process.env.SKEDDA_URL ?? null,
   }),
 )
