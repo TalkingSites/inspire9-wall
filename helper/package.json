@@ -1,0 +1,19 @@
+{
+  "name": "helper",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "build": "bun build src/index.ts --compile --target=bun-windows-x64 --outfile dist/inspire9-wall-helper.exe",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@hono/node-server": "^2.1.4",
+    "hono": "^4.13.13",
+    "music": "^0.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.4"
+  }
+}

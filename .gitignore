@@ -8,3 +8,5 @@ dist/
 *.local.md
 dashboard/data/
 dist-server/
+helper/dist/
+dist/

@@ -8,6 +8,7 @@ ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
 COPY package.json package-lock.json ./
 COPY dashboard/package.json dashboard/
 COPY music/package.json music/
+COPY helper/package.json helper/
 RUN npm ci
 COPY dashboard dashboard
 RUN npm run build -w dashboard
@@ -18,6 +19,7 @@ ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
 COPY package.json package-lock.json ./
 COPY dashboard/package.json dashboard/
 COPY music/package.json music/
+COPY helper/package.json helper/
 RUN npm ci --omit=dev --workspace=dashboard
 
 FROM node:24-alpine

@@ -10,14 +10,15 @@ Never put identifying details in tracked files, commits, issues or PRs: no deplo
 
 - `dashboard/`: Vite + React + TypeScript frontend (`src/`) and a Hono API (`server/`). In production one Node process serves both.
 - `music/`: shared Sonos code (`SonosMusic` controller and a Hono API), used by the dashboard server in local mode and by the helper.
-- `helper/` (planned): Windows service exposing the music API on `127.0.0.1:5005`, built to a single `.exe`, released by a GitHub Action.
-- `windows/` (planned): PowerShell scripts for the kiosk PC.
+- `helper/`: the kiosk's Sonos helper. Serves the `music/` API on `127.0.0.1:5005` for the dashboard's origin only (`src/guard.ts`: Host check, Origin check, CORS and Private Network Access preflights). Built to a single `.exe` with Bun by `.github/workflows/helper.yml`; a `v*` tag publishes a release with the `.exe` and the installer. Settings come from `config.json` (written by the installer) or env vars.
+- `windows/install-helper.ps1`: installs or updates the helper as a WinSW service (rotating logs, restart on failure, firewall rule for discovery). Re-run to update; settings are kept.
+- `windows/`: PowerShell scripts for the kiosk PC (kiosk setup scripts still to come).
 - `apps-script/wall-calendar-sync.gs`: Google Apps Script that keeps public title-and-time copies of the office calendars for the embed (the real one, with calendar ids, lives in the Google account).
 - `scripts/screenshot.mjs`: Playwright screenshots at given sizes, for checking layouts.
 
 ## Commands
 
-- `pm2 start ecosystem.config.cjs` (or `npm run dev` in a terminal): API on 8787 and Vite on 5191, with `/api` proxied. `pm2 logs inspire9-wall --lines 40 --nostream` for logs.
+- `pm2 start ecosystem.config.cjs` (or `npm run dev` in a terminal): API on 8787 and Vite on 5191, with `/api` proxied. `pm2 logs inspire9-wall --lines 40 --nostream` for logs. The second pm2 app, `inspire9-wall-helper`, runs the helper on this Mac (allowed origin http://localhost:5191).
 - `npm run typecheck -w dashboard`, `npm run build`.
 - `node scripts/screenshot.mjs http://localhost:5191/ <out-dir> 1920x1080 1080x1920`.
 

@@ -1,0 +1,49 @@
+# Builds the Windows helper (helper/) into a single .exe with Bun.
+# A version tag (v1.2.3) publishes a GitHub release with the .exe and the installer;
+# running it by hand just builds, to check the Windows build works.
+name: Helper
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+
+      - run: npx tsc -p helper --noEmit && npx tsc -p music --noEmit
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.2
+
+      - name: Build the .exe
+        run: bun build helper/src/index.ts --compile --target=bun-windows-x64 --outfile dist/inspire9-wall-helper.exe
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: inspire9-wall-helper
+          path: |
+            dist/inspire9-wall-helper.exe
+            windows/install-helper.ps1
+
+      - name: Publish the release
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: gh release create "$GITHUB_REF_NAME" dist/inspire9-wall-helper.exe windows/install-helper.ps1 --title "$GITHUB_REF_NAME" --generate-notes
+        env:
+          GH_TOKEN: ${{ github.token }}

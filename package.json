@@ -1,10 +1,11 @@
 {
   "name": "inspire9-wall",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "private": true,
   "workspaces": [
     "dashboard",
-    "music"
+    "music",
+    "helper"
   ],
   "scripts": {
     "dev": "npm run dev -w dashboard",
