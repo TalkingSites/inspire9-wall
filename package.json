@@ -1,0 +1,16 @@
+{
+  "name": "inspire9-wall",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "dashboard"
+  ],
+  "scripts": {
+    "dev": "npm run dev -w dashboard",
+    "build": "npm run build -w dashboard",
+    "start": "npm start -w dashboard"
+  },
+  "devDependencies": {
+    "playwright": "^1.64.0"
+  }
+}
