@@ -2,6 +2,7 @@ import { serve } from '@hono/node-server'
 import { serveStatic } from '@hono/node-server/serve-static'
 import { Hono } from 'hono'
 import { readFileSync } from 'node:fs'
+import { accessControl } from './access.js'
 import { loadLayout, saveLayout } from './layout-store.js'
 
 const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'))
@@ -20,6 +21,19 @@ app.use('*', async (c, next) => {
   await next()
   c.header('X-Robots-Tag', 'noindex, nofollow, noarchive')
 })
+
+// Only the office (and browsers holding the secret key) get anything. Always on in
+// production; with no ALLOWED_IPS or ACCESS_KEY set it lets nobody in.
+const list = (v?: string) => (v ?? '').split(',').map((s) => s.trim()).filter(Boolean)
+if (isProd || process.env.ALLOWED_IPS || process.env.ACCESS_KEY) {
+  const guard = accessControl({
+    allowedIps: list(process.env.ALLOWED_IPS),
+    key: process.env.ACCESS_KEY || undefined,
+    behindProxy: (process.env.TRUST_PROXY ?? (isProd ? '1' : '0')) === '1',
+  })
+  const open = new Set(['/api/health', '/robots.txt'])
+  app.use('*', (c, next) => (open.has(c.req.path) ? next() : guard(c, next)))
+}
 
 app.get('/robots.txt', (c) => c.text('User-agent: *\nDisallow: /\n'))
 
