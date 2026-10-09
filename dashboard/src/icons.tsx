@@ -1,18 +1,47 @@
-const paths = {
-  minimise: 'M5 12h14',
-  restore: 'M12 5v14M5 12h14',
-  expand: 'M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5',
-  shrink: 'M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5',
-  layout: 'M4 4h7v16H4zM13 4h7v7h-7zM13 13h7v7h-7z',
-  check: 'M5 12.5l4.5 4.5L19 7.5',
+// Bootstrap Icons (https://icons.getbootstrap.com), bundled as raw SVG so only the ones used ship.
+import aspectRatio from 'bootstrap-icons/icons/aspect-ratio.svg?raw'
+import checkLg from 'bootstrap-icons/icons/check-lg.svg?raw'
+import columnsGap from 'bootstrap-icons/icons/columns-gap.svg?raw'
+import dashLg from 'bootstrap-icons/icons/dash-lg.svg?raw'
+import fullscreen from 'bootstrap-icons/icons/fullscreen.svg?raw'
+import fullscreenExit from 'bootstrap-icons/icons/fullscreen-exit.svg?raw'
+import grid1x2 from 'bootstrap-icons/icons/grid-1x2.svg?raw'
+import layoutThreeColumns from 'bootstrap-icons/icons/layout-three-columns.svg?raw'
+import plusLg from 'bootstrap-icons/icons/plus-lg.svg?raw'
+import viewStacked from 'bootstrap-icons/icons/view-stacked.svg?raw'
+import zoomIn from 'bootstrap-icons/icons/zoom-in.svg?raw'
+import zoomOut from 'bootstrap-icons/icons/zoom-out.svg?raw'
+
+const svgs = {
+  minimise: dashLg,
+  restore: plusLg,
+  expand: fullscreen,
+  shrink: fullscreenExit,
+  layout: columnsGap,
+  check: checkLg,
+  zoomIn,
+  zoomOut,
+  layoutAuto: aspectRatio,
+  layoutMain: grid1x2,
+  layoutEven: layoutThreeColumns,
+  layoutStacked: viewStacked,
 }
 
-export type IconName = keyof typeof paths
+export type IconName = keyof typeof svgs
 
-export function Icon({ name, size = 22 }: { name: IconName; size?: number }) {
+// Just the shapes inside each <svg>, so every icon gets the same wrapper.
+const shapes = Object.fromEntries(Object.entries(svgs).map(([k, v]) => [k, v.replace(/^[\s\S]*?<svg[^>]*>|<\/svg>\s*$/g, '')])) as Record<IconName, string>
+
+export function Icon({ name, size = 22, flip = false }: { name: IconName; size?: number; flip?: boolean }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d={paths[name]} />
-    </svg>
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 16 16"
+      fill="currentColor"
+      aria-hidden="true"
+      style={flip ? { transform: 'scaleX(-1)' } : undefined}
+      dangerouslySetInnerHTML={{ __html: shapes[name] }}
+    />
   )
 }

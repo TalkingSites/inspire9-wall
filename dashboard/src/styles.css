@@ -13,8 +13,13 @@
   --deep-sage: #7e8f7a;
   --sage-tint: #e8ede7;
 
+  --dark-line: #3d3d3d;
+
   --gap: clamp(10px, 1vw, 18px);
+  /* around and between the panels */
+  --board-gap: clamp(4px, 0.35vw, 8px);
   --radius: 14px;
+  --card-radius: 10px;
   --topbar-h: clamp(72px, 10vh, 132px);
   --font: 'Plus Jakarta Sans Variable', 'Plus Jakarta Sans', system-ui, sans-serif;
 
@@ -33,7 +38,7 @@ body,
 }
 
 body {
-  background: var(--off-white);
+  background: var(--warm-grey);
   color: var(--charcoal);
   font-family: var(--font);
   overflow: hidden;
@@ -62,9 +67,9 @@ button {
   align-items: center;
   gap: clamp(16px, 2.5vw, 40px);
   height: var(--topbar-h);
-  padding: 0 calc(var(--gap) * 1.6);
-  background: var(--white);
-  border-bottom: 1.5px solid var(--border);
+  padding: 0 calc(var(--gap) * 1.6) 4px;
+  background: var(--charcoal);
+  color: var(--white);
   flex-shrink: 0;
 }
 
@@ -73,7 +78,7 @@ button {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: -5.5px;
+  bottom: 0;
   height: 4px;
   background: var(--brand-red);
 }
@@ -90,7 +95,17 @@ button {
   min-width: 0;
 }
 
+.clock-time,
+.clock-date {
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
 .clock-time {
+  color: var(--white);
   font-size: calc(var(--topbar-h) * 0.5);
   font-weight: 800;
   letter-spacing: -0.03em;
@@ -102,13 +117,13 @@ button {
   margin-left: 0.18em;
   font-size: 0.45em;
   font-weight: 700;
-  color: var(--muted);
+  color: var(--brand-red);
 }
 
 .clock-date {
   font-size: calc(var(--topbar-h) * 0.24);
   font-weight: 600;
-  color: var(--muted);
+  color: rgba(255, 255, 255, 0.75);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -136,8 +151,8 @@ button {
   width: 44px;
   height: 44px;
   border: 0;
-  border-radius: 12px;
-  background: var(--warm-grey);
+  border-radius: var(--card-radius);
+  background: var(--sage-tint);
   color: var(--charcoal);
   cursor: pointer;
   transition: background 0.15s, color 0.15s;
@@ -151,82 +166,124 @@ button {
   outline: none;
 }
 
-.layout-button {
+.topbar-button {
   width: 52px;
   height: 52px;
+  background: var(--dark-line);
+  color: var(--white);
+}
+
+.topbar-button:hover,
+.topbar-button:focus-visible,
+.topbar-button.is-open {
+  background: var(--brand-red);
+  color: var(--white);
 }
 
 /* Layout menu */
 
-.layout-menu {
+.menu {
   position: absolute;
-  top: calc(100% + 12px);
+  top: calc(100% + 16px);
   right: 0;
   z-index: 100;
-  width: min(380px, 90vw);
-  padding: 14px;
+  width: min(490px, 90vw);
+  padding: 22px 20px 20px;
   background: var(--white);
-  border: 1.5px solid var(--border);
+  color: var(--charcoal);
   border-radius: var(--radius);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 6px 40px rgba(0, 0, 0, 0.16);
 }
 
-.layout-menu-title {
-  margin: 4px 8px 10px;
-  font-size: 20px;
+.menu-title {
+  margin: 0 8px 8px;
+  font-size: 17px;
   font-weight: 800;
+  color: var(--brand-red);
 }
 
-.layout-option {
-  display: flex;
+.menu-option {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  gap: 14px;
   width: 100%;
-  min-height: 60px;
-  padding: 10px 12px;
+  min-height: 72px;
+  padding: 10px 8px;
   border: 0;
-  border-radius: 10px;
+  border-radius: var(--card-radius);
   background: none;
   text-align: left;
   cursor: pointer;
 }
 
-.layout-option:hover {
+.menu-option + .menu-option {
+  border-top: 1px solid var(--border);
+}
+
+.menu-option:hover {
   background: var(--off-white);
 }
 
-.layout-option.is-selected {
+.menu-option-icon {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: var(--card-radius);
   background: var(--sage-tint);
-  color: var(--charcoal);
+  color: var(--deep-sage);
 }
 
-.layout-option-text {
+.menu-option.is-selected .menu-option-icon {
+  background: var(--red-tint);
+  color: var(--brand-red);
+}
+
+.menu-option-text {
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
 
-.layout-option-label {
+.menu-option-label {
   font-size: 17px;
   font-weight: 700;
 }
 
-.layout-option-hint {
+.menu-option-hint {
   font-size: 13.5px;
   color: var(--muted);
 }
 
-.layout-reset {
+.menu-option-tick {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+}
+
+.menu-option.is-selected .menu-option-tick {
+  background: var(--brand-red);
+  color: var(--white);
+}
+
+.menu-button {
   width: 100%;
   min-height: 48px;
-  margin-top: 8px;
+  margin-top: 12px;
   border: 1.5px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--card-radius);
   background: var(--white);
   font-weight: 600;
-  color: var(--muted);
+  color: var(--charcoal);
   cursor: pointer;
+}
+
+.menu-button:hover {
+  border-color: var(--brand-red);
+  background: var(--off-white);
 }
 
 /* Board */
@@ -234,7 +291,7 @@ button {
 .board-wrap {
   flex: 1;
   min-height: 0;
-  padding: calc(var(--gap) + 6px) var(--gap) var(--gap);
+  padding: var(--board-gap);
 }
 
 .board,
@@ -244,7 +301,7 @@ button {
 
 .resize-handle {
   position: relative;
-  flex-basis: var(--gap);
+  flex-basis: var(--board-gap);
   display: grid;
   place-items: center;
   outline: none;
@@ -252,9 +309,9 @@ button {
 
 .resize-grip {
   display: block;
-  width: 6px;
+  width: 4px;
   height: 56px;
-  border-radius: 6px;
+  border-radius: 4px;
   background: var(--border);
   transition: background 0.15s;
 }
@@ -263,7 +320,7 @@ button {
 .board-column > .resize-handle .resize-grip,
 .board[aria-orientation='vertical'] > .resize-handle .resize-grip {
   width: 56px;
-  height: 6px;
+  height: 4px;
 }
 
 .resize-handle:hover .resize-grip,
@@ -272,19 +329,21 @@ button {
   background: var(--brand-red);
 }
 
-html.is-resizing iframe {
+html.is-resizing iframe,
+html.is-dragging iframe {
   pointer-events: none;
 }
 
 /* Panel frames */
 
 .frame {
+  position: relative;
   display: flex;
   flex-direction: column;
   height: 100%;
   background: var(--white);
   border: 1.5px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: var(--card-radius);
   overflow: hidden;
 }
 
@@ -304,12 +363,95 @@ html.is-resizing iframe {
   font-size: clamp(18px, 1.5vw, 26px);
   font-weight: 800;
   letter-spacing: -0.01em;
+  color: var(--brand-red);
   white-space: nowrap;
+}
+
+.frame-bar.is-draggable {
+  cursor: grab;
+  /* the bar is a drag handle, so the browser shouldn't scroll or zoom from it */
+  touch-action: none;
 }
 
 .frame-actions {
   display: flex;
+  align-items: center;
   gap: 8px;
+}
+
+.icon-button:disabled {
+  opacity: 0.35;
+  cursor: default;
+  background: var(--sage-tint);
+  color: var(--charcoal);
+}
+
+/* a pill like the welcome page's discounts; tap to go back to 100% */
+.zoom-level {
+  min-width: 64px;
+  height: 44px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 22px;
+  background: var(--red-tint);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--brand-red);
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+
+.zoom-level.is-default {
+  background: var(--sage-tint);
+  color: var(--charcoal);
+}
+
+.frame-zoom {
+  height: 100%;
+}
+
+/* Dragging a panel onto another to swap them */
+
+html.is-dragging,
+html.is-dragging * {
+  cursor: grabbing !important;
+}
+
+.frame.is-drag-source {
+  opacity: 0.45;
+}
+
+/* an overlay, so the highlight sits above iframes too */
+.frame.is-drop-target {
+  position: relative;
+  border-color: var(--brand-red);
+}
+
+.frame.is-drop-target::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border: 3px solid var(--brand-red);
+  border-radius: inherit;
+  background: rgba(200, 53, 42, 0.06);
+  pointer-events: none;
+}
+
+.drag-ghost {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 200;
+  margin: -28px 0 0 -40px;
+  padding: 14px 22px;
+  background: var(--charcoal);
+  color: var(--white);
+  border-radius: 12px;
+  font-size: 20px;
+  font-weight: 800;
+  pointer-events: none;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
 }
 
 .frame-body {
@@ -354,10 +496,10 @@ html.is-resizing iframe {
 .frame.is-expanded {
   position: fixed;
   z-index: 50;
-  top: calc(var(--topbar-h) + var(--gap) + 6px);
-  left: var(--gap);
-  right: var(--gap);
-  bottom: var(--gap);
+  top: calc(var(--topbar-h) + var(--board-gap));
+  left: var(--board-gap);
+  right: var(--board-gap);
+  bottom: var(--board-gap);
   height: auto;
   box-shadow: 0 16px 60px rgba(0, 0, 0, 0.14);
 }
@@ -365,9 +507,9 @@ html.is-resizing iframe {
 .app.has-expanded .board-wrap::after {
   content: '';
   position: fixed;
-  inset: calc(var(--topbar-h) + 6px) 0 0;
+  inset: var(--topbar-h) 0 0;
   z-index: 40;
-  background: rgba(250, 247, 243, 0.92);
+  background: rgba(241, 239, 234, 0.92);
 }
 
 /* Panel contents */
