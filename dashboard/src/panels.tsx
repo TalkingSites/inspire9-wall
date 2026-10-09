@@ -27,11 +27,3 @@ export function CalendarPanel({ url }: { url: string | null }) {
 export function SkeddaPanel({ url }: { url: string | null }) {
   return <EmbedPanel url={url} title="Room bookings" missing="Bookings aren't set up yet." />
 }
-
-export function MusicPanel() {
-  return (
-    <div className="placeholder">
-      <p className="placeholder-text">Music controls unavailable</p>
-    </div>
-  )
-}

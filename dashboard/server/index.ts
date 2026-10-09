@@ -8,6 +8,11 @@ const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url),
 const port = Number(process.env.PORT ?? 8787)
 const isProd = process.env.NODE_ENV === 'production'
 
+// Where the wall's music controls talk to Sonos: this server directly ("local", when it
+// runs on the office network), the helper on the kiosk PC ("helper"), or nowhere ("off").
+const musicSource = process.env.MUSIC_SOURCE ?? (isProd ? 'helper' : 'local')
+const helperUrl = process.env.MUSIC_HELPER_URL ?? 'http://127.0.0.1:5005'
+
 const app = new Hono()
 
 // Never let search engines index any part of the dashboard.
@@ -24,6 +29,7 @@ app.get('/api/config', (c) =>
   c.json({
     version: pkg.version,
     calendarUrl: process.env.GCAL_EMBED_URL ?? null,
+    musicUrl: musicSource === 'local' ? '/api/music' : musicSource === 'helper' ? helperUrl : null,
     skeddaUrl: process.env.SKEDDA_URL ?? null,
   }),
 )
@@ -36,6 +42,25 @@ app.put('/api/layout', async (c) => {
   await saveLayout(body)
   return c.json({ ok: true })
 })
+
+if (musicSource === 'local') {
+  // Only loaded in local mode; the deployed server never talks to Sonos itself.
+  const { SonosMusic, createMusicApi } = await import('music' as string)
+  const music = new SonosMusic({
+    hosts: (process.env.SONOS_HOSTS ?? '').split(',').map((h: string) => h.trim()).filter(Boolean),
+    maxVolume: Number(process.env.MUSIC_MAX_VOLUME ?? 85),
+    // "Speaker name=60, Other speaker=50"
+    speakerLimits: Object.fromEntries(
+      (process.env.MUSIC_SPEAKER_LIMITS ?? '')
+        .split(',')
+        .map((pair: string) => pair.split('='))
+        .filter(([name, v]: string[]) => name?.trim() && Number.isFinite(Number(v)))
+        .map(([name, v]: string[]) => [name.trim(), Number(v)]),
+    ),
+    historyFile: `${process.env.DATA_DIR ?? './data'}/music-history.json`,
+  })
+  app.route('/api/music', createMusicApi(music))
+}
 
 if (isProd) {
   app.use('/*', serveStatic({ root: './dist' }))

@@ -2,13 +2,15 @@ import { useCallback, useEffect, useState } from 'react'
 import { Board } from './Board'
 import { Header } from './Header'
 import { arrangeWith, arrangementFor, defaultSavedLayout, resolvePreset, slotsOf, type PanelId } from './layout'
-import { CalendarPanel, MusicPanel, SkeddaPanel } from './panels'
+import { MusicPanel } from './Music'
+import { CalendarPanel, SkeddaPanel } from './panels'
 import { useSavedLayout } from './use-saved-layout'
 
-type Config = { version: string; calendarUrl: string | null; skeddaUrl: string | null }
+type Config = { version: string; calendarUrl: string | null; skeddaUrl: string | null; musicUrl: string | null }
 
 const fullReloadMs = 4 * 60 * 60 * 1000
-const expandedIdleMs = 2 * 60 * 1000
+// An expanded panel goes back to the board after this long without a touch; music sooner.
+const expandedIdleMs = { music: 60 * 1000, other: 2 * 60 * 1000 }
 
 function usePortrait() {
   const query = '(orientation: portrait)'
@@ -53,10 +55,11 @@ export function App() {
   // An expanded panel returns to the dashboard after a while without a touch.
   useEffect(() => {
     if (!expanded) return
-    let timer = window.setTimeout(() => setExpanded(null), expandedIdleMs)
+    const idleMs = expanded === 'music' ? expandedIdleMs.music : expandedIdleMs.other
+    let timer = window.setTimeout(() => setExpanded(null), idleMs)
     const reset = () => {
       window.clearTimeout(timer)
-      timer = window.setTimeout(() => setExpanded(null), expandedIdleMs)
+      timer = window.setTimeout(() => setExpanded(null), idleMs)
     }
     window.addEventListener('pointerdown', reset)
     return () => {
@@ -121,7 +124,7 @@ export function App() {
             onZoom={(id, z) => updateSaved((l) => ({ ...l, zoom: { ...l.zoom, [id]: z } }))}
             onSwap={onSwap}
             renderPanel={(id) =>
-              id === 'calendar' ? <CalendarPanel url={config?.calendarUrl ?? null} /> : id === 'skedda' ? <SkeddaPanel url={config?.skeddaUrl ?? null} /> : <MusicPanel />
+              id === 'calendar' ? <CalendarPanel url={config?.calendarUrl ?? null} /> : id === 'skedda' ? <SkeddaPanel url={config?.skeddaUrl ?? null} /> : <MusicPanel base={config?.musicUrl ?? null} expanded={expanded === 'music'} />
             }
           />
         )}
