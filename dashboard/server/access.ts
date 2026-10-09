@@ -34,7 +34,7 @@ const deniedPage = `<!doctype html>
 <html lang="en-AU"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow"><title>Not available</title>
 <style>body{margin:0;display:grid;place-items:center;min-height:100vh;background:#f1efea;color:#2b2b2b;font:600 18px/1.5 system-ui,sans-serif;text-align:center;padding:24px}</style>
-</head><body><p>This screen is only available at the office.</p></body></html>`
+</head><body><p>This screen isn't available at this location.</p></body></html>`
 
 export function accessControl({ allowedIps, key, behindProxy, log = console.warn }: AccessOptions): MiddlewareHandler {
   const allowed = new Set(allowedIps.map(normaliseIp).filter(Boolean))
