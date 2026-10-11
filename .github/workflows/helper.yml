@@ -1,5 +1,5 @@
 # Builds the Windows helper (helper/) into a single .exe with Bun.
-# A version tag (v1.2.3) publishes a GitHub release with the .exe and the installer;
+# A version tag (v1.2.3) publishes a GitHub release with the .exe and the Windows scripts;
 # running it by hand just builds, to check the Windows build works.
 name: Helper
 
@@ -40,10 +40,10 @@ jobs:
           name: inspire9-wall-helper
           path: |
             dist/inspire9-wall-helper.exe
-            windows/install-helper.ps1
+            windows/*.ps1
 
       - name: Publish the release
         if: startsWith(github.ref, 'refs/tags/v')
-        run: gh release create "$GITHUB_REF_NAME" dist/inspire9-wall-helper.exe windows/install-helper.ps1 --title "$GITHUB_REF_NAME" --generate-notes
+        run: gh release create "$GITHUB_REF_NAME" dist/inspire9-wall-helper.exe windows/*.ps1 --title "$GITHUB_REF_NAME" --generate-notes
         env:
           GH_TOKEN: ${{ github.token }}
