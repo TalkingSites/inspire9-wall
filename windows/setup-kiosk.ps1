@@ -11,8 +11,9 @@ Sets up the PC as the wall kiosk. Safe to run again: it updates whatever is alre
    and again if it's closed or crashes.
 4. Return to kiosk: after someone uses remote desktop, the kiosk session comes back to
    the screen by itself.
-5. Power: display and PC stay on, wake timers allowed, the PC wakes and turns the display
-   on every morning, and the lock screen keeps the display on for an hour.
+5. Power: the PC stays on. The display is on from -WakeAt to -SleepAt every day; outside
+   those hours it turns off after -NightScreenMinutes without a touch. The lock screen
+   keeps the display on for an hour.
 6. Automatic sign-in for the kiosk account (with -EnableAutologon), using Microsoft's
    Sysinternals Autologon, which stores the password encrypted.
 7. The Sonos helper (install-helper.ps1), unless -SkipHelper.
@@ -29,6 +30,8 @@ param(
     [securestring]$KioskPassword,
     [switch]$EnableAutologon,
     [string]$WakeAt = '7:30am',
+    [string]$SleepAt = '5pm',
+    [int]$NightScreenMinutes = 5,
     [int]$MaxVolume,
     [string]$SpeakerLimits,
     [switch]$SkipHelper
@@ -145,13 +148,14 @@ $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoi
 Register-ScheduledTask -TaskName 'Inspire9 Wall return to kiosk' -Action $action -Trigger @($onSessionEnd, $everyFive) -Principal $principal -Settings $settings -Force | Out-Null
 Done 'on remote desktop sign-out or disconnect, and every 5 minutes'
 
-# 5. Power and morning wake -----------------------------------------------------------------
+# 5. Power and screen hours -----------------------------------------------------------------
 Step 'Power'
-# On all the time for now: display, sleep and hibernate never time out on mains power.
-powercfg /change monitor-timeout-ac 0
+# The PC never sleeps or hibernates on mains power. The display turns off after a few
+# minutes without a touch, except during screen hours (below), when it's kept on.
+powercfg /change monitor-timeout-ac $NightScreenMinutes
 powercfg /change standby-timeout-ac 0
 powercfg /change hibernate-timeout-ac 0
-# Allow wake timers, so the morning wake task can wake the PC if it ever sleeps.
+# Allow wake timers, so the screen hours task can wake the PC if it ever sleeps.
 powercfg /setacvalueindex SCHEME_CURRENT SUB_SLEEP RTCWAKE 1
 # "Console lock display off timeout" is hidden and turns the display off after a minute on
 # the lock screen (for instance just after a remote desktop session). Show it and raise it.
@@ -159,15 +163,25 @@ $consoleLock = '8ec4b3a5-6868-48c2-be75-4f3044be88a7'
 powercfg -attributes SUB_VIDEO $consoleLock -ATTRIB_HIDE
 powercfg /setacvalueindex SCHEME_CURRENT SUB_VIDEO $consoleLock 3600
 powercfg /setactive SCHEME_CURRENT
-Done 'display and PC stay on; lock screen keeps the display on for an hour'
+Done "PC stays on; outside screen hours the display turns off after $NightScreenMinutes minutes without a touch"
 
-$wakeScript = Get-KioskScript 'wake-display.ps1'
-$action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument "-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File `"$wakeScript`""
-$trigger = New-ScheduledTaskTrigger -Daily -At $WakeAt
+# Earlier versions had a morning wake task instead.
+if (Get-ScheduledTask -TaskName 'Inspire9 Wall morning wake' -ErrorAction SilentlyContinue) {
+    Unregister-ScheduledTask -TaskName 'Inspire9 Wall morning wake' -Confirm:$false
+}
+Remove-Item (Join-Path $dataDir 'wake-display.ps1') -ErrorAction SilentlyContinue
+
+$hoursScript = Get-KioskScript 'screen-hours.ps1'
+$action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument "-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File `"$hoursScript`" -OnAt `"$WakeAt`" -OffAt `"$SleepAt`""
+# Every morning, and at sign-in in case the PC restarts during the day.
+$triggers = @(
+    (New-ScheduledTaskTrigger -Daily -At $WakeAt),
+    (New-ScheduledTaskTrigger -AtLogOn -User $kioskAccount)
+)
 $principal = New-ScheduledTaskPrincipal -UserId $kioskAccount -LogonType Interactive -RunLevel Limited
-$settings = New-ScheduledTaskSettingsSet -WakeToRun -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -ExecutionTimeLimit (New-TimeSpan -Minutes 1) -StartWhenAvailable
-Register-ScheduledTask -TaskName 'Inspire9 Wall morning wake' -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Force | Out-Null
-Done "wakes and turns the display on daily at $WakeAt"
+$settings = New-ScheduledTaskSettingsSet -WakeToRun -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -ExecutionTimeLimit ([TimeSpan]::Zero) -MultipleInstances IgnoreNew -StartWhenAvailable
+Register-ScheduledTask -TaskName 'Inspire9 Wall screen hours' -Action $action -Trigger $triggers -Principal $principal -Settings $settings -Force | Out-Null
+Done "display on from $WakeAt to $SleepAt every day"
 
 # 6. Automatic sign-in ----------------------------------------------------------------------
 if ($EnableAutologon) {
