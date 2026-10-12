@@ -182,8 +182,14 @@ if ($EnableAutologon) {
     if ($signature.Status -ne 'Valid' -or $signature.SignerCertificate.Subject -notlike '*O=Microsoft Corporation*') {
         throw 'Autologon download is not signed by Microsoft; not running it'
     }
-    & $autologon $KioskUser $env:COMPUTERNAME (Plain $KioskPassword) /accepteula
-    Remove-Item $zip, $folder -Recurse -Force
+    # Autologon is a GUI program, so PowerShell wouldn't wait for it without Start-Process -Wait
+    $quotedPassword = '"{0}"' -f ((Plain $KioskPassword) -replace '"', '\"')
+    Start-Process $autologon -ArgumentList $KioskUser, $env:COMPUTERNAME, $quotedPassword, '/accepteula' -Wait
+    Remove-Item $zip, $folder -Recurse -Force -ErrorAction SilentlyContinue
+    $winlogon = Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon'
+    if ($winlogon.AutoAdminLogon -ne '1' -or $winlogon.DefaultUserName -ne $KioskUser) {
+        throw "Automatic sign-in wasn't set. Run this again, or run Autologon by hand."
+    }
     Done 'on (password stored encrypted by Windows)'
 }
 
