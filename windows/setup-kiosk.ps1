@@ -162,8 +162,16 @@ powercfg /setacvalueindex SCHEME_CURRENT SUB_SLEEP RTCWAKE 1
 $consoleLock = '8ec4b3a5-6868-48c2-be75-4f3044be88a7'
 powercfg -attributes SUB_VIDEO $consoleLock -ATTRIB_HIDE
 powercfg /setacvalueindex SCHEME_CURRENT SUB_VIDEO $consoleLock 3600
+# Don't ask for a password when the display or PC wakes. On Modern Standby PCs the display
+# turning off counts as sleep, so without this the kiosk is locked every morning. The
+# policy also overrides the per-user "If you've been away" setting.
+powercfg /setacvalueindex SCHEME_CURRENT SUB_NONE CONSOLELOCK 0
+powercfg /setdcvalueindex SCHEME_CURRENT SUB_NONE CONSOLELOCK 0
+$wakePassword = 'HKLM:\SOFTWARE\Policies\Microsoft\Power\PowerSettings\0e796bdb-100d-47d6-a2d5-f7d2daa51f51'
+Set-Policy $wakePassword 'ACSettingIndex' 0
+Set-Policy $wakePassword 'DCSettingIndex' 0
 powercfg /setactive SCHEME_CURRENT
-Done "PC stays on; outside screen hours the display turns off after $NightScreenMinutes minutes without a touch"
+Done "PC stays on, no password on wake; outside screen hours the display turns off after $NightScreenMinutes minutes without a touch"
 
 # Earlier versions had a morning wake task instead.
 if (Get-ScheduledTask -TaskName 'Inspire9 Wall morning wake' -ErrorAction SilentlyContinue) {

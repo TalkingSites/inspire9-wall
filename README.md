@@ -107,7 +107,7 @@ On the PC, signed in with an administrator account:
    | Edge | No first-run, restore or translation prompts, nothing running in the background, and the dashboard allowed to reach the helper without a prompt (`LoopbackNetworkAllowedForUrls`, `LocalNetworkAccessAllowedForUrls`) |
    | Kiosk browser | At the kiosk account's sign-in, Edge opens the dashboard full screen, and opens it again if it's closed or crashes |
    | Return to kiosk | A task running as SYSTEM, on remote desktop sign-out or disconnect (events 23 and 24) and every 5 minutes: reconnects the kiosk session to the screen with `tscon`, unless a remote desktop session is active or someone else is signed in at the PC |
-   | Power | The PC stays on. The display is on from 7:30am to 5pm every day (`-WakeAt` and `-SleepAt` to change), waking the PC if it ever sleeps; outside those hours it turns off after 5 minutes without a touch (`-NightScreenMinutes`). The hidden "console lock display off timeout" is shown and raised to an hour |
+   | Power | The PC stays on. The display is on from 7:30am to 5pm every day (`-WakeAt` and `-SleepAt` to change), waking the PC if it ever sleeps; outside those hours it turns off after 5 minutes without a touch (`-NightScreenMinutes`). No password is asked for when the display or PC wakes. The hidden "console lock display off timeout" is shown and raised to an hour |
    | Automatic sign-in | With `-EnableAutologon`: Microsoft's Sysinternals Autologon, which stores the password encrypted |
    | Sonos helper | Installed as a service (below), updating itself weekly |
 
